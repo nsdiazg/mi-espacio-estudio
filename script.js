@@ -59,7 +59,7 @@ function diasRestantes(cadena) {
 const modalFondo = $('modal-fondo');
 
 function adaptarColorimetria(urlImagen) {
-  if (!urlImagen || urlImagen.startsWith('data:image/gif')) return; // Los GIF o fondos vacíos mantienen el azul
+  if (!urlImagen || urlImagen.startsWith('data:image/gif')) return;
   
   const img = new Image();
   img.crossOrigin = "Anonymous";
@@ -76,7 +76,7 @@ function adaptarColorimetria(urlImagen) {
       const data = ctx.getImageData(0, 0, 50, 50).data;
       let r = 0, g = 0, b = 0, conteo = 0;
       
-      for (let i = 0; i < data.length; i += 16) { // Muestreo de píxeles
+      for (let i = 0; i < data.length; i += 16) {
         r += data[i];
         g += data[i + 1];
         b += data[i + 2];
@@ -87,14 +87,13 @@ function adaptarColorimetria(urlImagen) {
       g = Math.floor(g / conteo);
       b = Math.floor(b / conteo);
       
-      // Ajustar brillo si el color extraído es muy oscuro
       const brillo = (r * 299 + g * 587 + b * 114) / 1000;
       if (brillo < 80) { r += 40; g += 40; b += 40; }
       
       const colorDominante = `rgb(${r}, ${g}, ${b})`;
       document.documentElement.style.setProperty('--accent-primario', colorDominante);
     } catch (e) {
-      // Si la imagen es externa y bloquea CORS, mantiene el color por defecto
+      // Si la imagen externa bloquea CORS, conserva el color por defecto
     }
   };
 }
@@ -129,11 +128,11 @@ if ($('input-brillo')) {
 }
 
 if ($('btn-aplicar-fondo')) {$('btn-aplicar-fondo').addEventListener('click', () => {
-    const url = $('input-url-fondo').value.trim();
+    const url = $('input-url-fondo') ?$('input-url-fondo').value.trim() : '';
     DB.guardar('fondo', url);
-    DB.guardar('brillo', Number($('input-brillo').value));
+    DB.guardar('brillo', Number($('input-brillo') ?$('input-brillo').value : 70));
     aplicarFondo();
-    modalFondo.classList.remove('abierto');
+    if (modalFondo) modalFondo.classList.remove('abierto');
     avisar('Fondo guardado correctamente.', 'ok');
   });
 }
@@ -143,11 +142,10 @@ if ($('btn-restaurar-fondo')) {$('btn-restaurar-fondo').addEventListener('click'
     DB.guardar('brillo', 70);
     document.documentElement.style.setProperty('--accent-primario', '#3d8bff');
     aplicarFondo();
-    modalFondo.classList.remove('abierto');
+    if (modalFondo) modalFondo.classList.remove('abierto');
   });
 }
 
-// Cargar imagen local desde archivo
 if ($('input-archivo-fondo')) {$('input-archivo-fondo').addEventListener('change', (e) => {
     const archivo = e.target.files[0];
     if (!archivo) return;
@@ -155,20 +153,21 @@ if ($('input-archivo-fondo')) {$('input-archivo-fondo').addEventListener('change
     lector.onload = () => {
       DB.guardar('fondo', lector.result);
       aplicarFondo();
-      modalFondo.classList.remove('abierto');
+      if (modalFondo) modalFondo.classList.remove('abierto');
       avisar('Fondo guardado.', 'ok');
     };
     lector.readAsDataURL(archivo);
   });
 }
 
-/* ---------- 2. MÚSICA CON MEMORIA AUTOLIMPIABLE ---------- */
-const LOFI_POR_DEFECTO = 'https://open.spotify.com/embed/playlist/37i9dQZF1DX8U21A1snP82';
+/* ---------- 2. MÚSICA CON MEMORIA PERSISTENTE ---------- */
+const LOFI_POR_DEFECTO = 'https://www.youtube.com/embed/jfKfPfyJRdk';
 
 function convertirAEmbed(url) {
   url = url.trim();
-  if (url.includes('open.spotify.com') && !url.includes('/embed/'))
-    return url.replace('open.spotify.com/', 'open.spotify.com/embed/').split('?')[0];
+  if (url.includes('spotify.com') && !url.includes('/embed/')) {
+    return url.replace('spotify.com/', 'spotify.com/embed/').split('?')[0];
+  }
   const yt = url.match(/[?&]v=([\w-]{11})/);
   if (yt) return `https://www.youtube.com/embed/${yt[1]}`;
   const corto = url.match(/youtu\.be\/([\w-]{11})/);
@@ -183,9 +182,9 @@ function cargarMusica(url) {
 }
 
 if ($('btn-guardar-musica')) {$('btn-guardar-musica').addEventListener('click', () => {
-    const url = $('input-url-musica').value;
-    if (!url.trim()) return;
-    const embed = convertirAEmbed(url);
+    const campo = $('input-url-musica');
+    if (!campo || !campo.value.trim()) return;
+    const embed = convertirAEmbed(campo.value);
     cargarMusica(embed);
     avisar('Playlist guardada en memoria.', 'ok');
   });
@@ -201,6 +200,8 @@ function restaurarMusica() {
   const guardada = DB.leer('musica', LOFI_POR_DEFECTO);
   const iframe = $('iframe-player');
   if (iframe) iframe.src = guardada;
+  if ($('input-url-musica') && guardada !== LOFI_POR_DEFECTO) {$('input-url-musica').value = guardada;
+  }
 }
 
 /* ---------- 3. NAVEGACIÓN Y SECCIONES ---------- */
