@@ -1287,13 +1287,64 @@ if (mascota) {
 setTimeout(() => { if (bocadillo) bocadillo.hidden = true; }, 5000);
 setInterval(() => { if (document.visibilityState === 'visible') hablarMascota(frases[Math.floor(Math.random() * frases.length)]); }, 15 * 60 * 1000);
 
+/* ---------- 13b. NOMBRE Y BIENVENIDA ---------- */
+const splash = $('pantalla-bienvenida');
+const inputSplash = $('input-nombre-splash');
+const inputPerfil = $('input-nombre-perfil');
+
+function nombreGuardado() { return DB.leer('nombre', ''); }
+
+function guardarNombre(valor) {
+  const limpio = (valor || '').trim();
+  if (!limpio) return false;
+  DB.guardar('nombre', limpio);
+  if (inputPerfil) inputPerfil.value = limpio;
+  actualizarSaludo();
+  return true;
+}
+
+function actualizarSaludo() {
+  const saludoEl = $('saludo');
+  if (!saludoEl) return;
+  const hora = new Date().getHours();
+  const base = hora < 12 ? 'Buenos días' : hora < 19 ? 'Buenas tardes' : 'Buenas noches';
+  const resto = hora < 12 ? '¿Con qué empezamos?' : hora < 19 ? 'Vamos por la siguiente entrega.' : 'Sesión corta y a descansar.';
+  const nombre = nombreGuardado();
+  saludoEl.textContent = nombre ? `${base}, ${nombre}. ${resto}` : `${base}. ${resto}`;
+}
+
+if (inputPerfil) inputPerfil.value = nombreGuardado();
+
+if (splash) {
+  if (nombreGuardado()) splash.classList.remove('abierto');
+  else splash.classList.add('abierto');
+}
+
+if ($('btn-entrar-app')) {
+  $('btn-entrar-app').addEventListener('click', () => {
+    if (!inputSplash || !guardarNombre(inputSplash.value)) {
+      avisar('Escribe tu nombre para continuar.', 'error'); return;
+    }
+    if (splash) splash.classList.remove('abierto');
+  });
+}
+
+if (inputSplash) {
+  inputSplash.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); $('btn-entrar-app').click(); }
+  });
+}
+
+if ($('btn-guardar-perfil')) {
+  $('btn-guardar-perfil').addEventListener('click', () => {
+    if (guardarNombre(inputPerfil ? inputPerfil.value : '')) avisar('Nombre actualizado.', 'ok');
+    else avisar('Escribe un nombre válido.', 'error');
+  });
+}
+
 /* ---------- 14. ARRANQUE ---------- */
 (function inicio() {
-  const hora = new Date().getHours();
-  if ($('saludo')) {$('saludo').textContent = hora < 12 ? 'Buenos días. ¿Con qué empezamos?'
-      : hora < 19 ? 'Buenas tardes. Vamos por la siguiente entrega.'
-      : 'Buenas noches. Sesión corta y a descansar.';
-  }
+  actualizarSaludo();
 
   if ($('input-fecha'))$('input-fecha').min = claveFecha();
   pintarSemestres();

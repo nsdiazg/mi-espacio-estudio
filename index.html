@@ -21,6 +21,20 @@
 </head>
 <body>
 
+<div id="pantalla-bienvenida" class="modal" role="dialog" aria-modal="true" aria-labelledby="titulo-splash">
+  <div class="modal-content">
+    <h3 id="titulo-splash">Mi Espacio de Estudio</h3>
+    <p class="ayuda">Tu semestre, en un solo lugar. ¿Cómo te llamas?</p>
+    <label class="campo campo-ancho">
+      <span>Tu nombre</span>
+      <input type="text" id="input-nombre-splash" placeholder="Escribe tu nombre..." autocomplete="name" maxlength="40">
+    </label>
+    <div class="acciones-notas">
+      <button id="btn-entrar-app" class="btn-guardar" type="button">Comenzar</button>
+    </div>
+  </div>
+</div>
+
 <div id="bg-overlay"></div>
 
 <header>
@@ -41,6 +55,7 @@
   <button id="btn-flashcards" class="btn-menu" type="button">Fichas</button>
   <button id="btn-qr" class="btn-menu" type="button">QR</button>
   <button id="btn-musica" class="btn-menu" type="button">Música</button>
+  <button id="btn-perfil" class="btn-menu" type="button">Perfil</button>
 </nav>
 
 <main>
@@ -376,6 +391,19 @@
         allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
         loading="lazy"></iframe>
     </div>
+  </div>
+</section>
+
+<!-- 8. PERFIL -->
+<section id="sec-perfil">
+  <h2>Tu perfil</h2>
+  <p class="ayuda">Cambia el nombre que usamos para saludarte.</p>
+  <div class="card-formulario">
+    <label class="campo campo-ancho">
+      <span>Tu nombre</span>
+      <input type="text" id="input-nombre-perfil" placeholder="Tu nombre..." maxlength="40" autocomplete="name">
+    </label>
+    <button id="btn-guardar-perfil" class="btn-guardar" type="button">Actualizar nombre</button>
   </div>
 </section>
 
