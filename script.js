@@ -153,12 +153,13 @@ function pintarSemestres() {
     const quitar = document.createElement('button');
     quitar.className = 'quitar'; quitar.type = 'button'; quitar.textContent = '✕';
     quitar.title = 'Quitar materia';
-    quitar.onclick = () => {
+    quitar.onclick = async () => {
       const conTrabajos = tareas.filter(t => t.materiaId === m.id).length;
       const aviso = conTrabajos
         ? `"${m.nombre}" tiene ${conTrabajos} trabajo(s). Se eliminarán también. ¿Seguro?`
         : `¿Quitar "${m.nombre}"?`;
-      if (!confirm(aviso)) return;
+      const ok = await pedirConfirmacion(aviso);
+      if (!ok) return;
       tareas = tareas.filter(t => t.materiaId !== m.id);
       DB.guardar('tareas', tareas);
       sem.materias = sem.materias.filter(x => x.id !== m.id);
@@ -166,6 +167,55 @@ function pintarSemestres() {
     };
     card.appendChild(quitar);
     grid.appendChild(card);
+  });
+}
+
+/* ---------- 0c. DIÁLOGOS PROPIOS (prompt/confirm no funcionan en modo app instalada) ---------- */
+function pedirTexto(titulo, valorInicial = '') {
+  return new Promise(resolve => {
+    const modal = $('modal-prompt');
+    const input = $('modal-prompt-input');
+    const aceptar = $('modal-prompt-aceptar');
+    const cancelar = $('modal-prompt-cancelar');
+    if (!modal || !input || !aceptar || !cancelar) { resolve(null); return; }
+    $('modal-prompt-titulo').textContent = titulo;
+    $('modal-prompt-campo').hidden = false;
+    input.value = valorInicial;
+    modal.classList.add('abierto');
+    setTimeout(() => input.focus(), 50);
+    function limpiar() {
+      modal.classList.remove('abierto');
+      aceptar.removeEventListener('click', onAceptar);
+      cancelar.removeEventListener('click', onCancelar);
+      input.removeEventListener('keydown', onKey);
+    }
+    function onAceptar() { const v = input.value.trim(); limpiar(); resolve(v || null); }
+    function onCancelar() { limpiar(); resolve(null); }
+    function onKey(e) { if (e.key === 'Enter') { e.preventDefault(); onAceptar(); } else if (e.key === 'Escape') onCancelar(); }
+    aceptar.addEventListener('click', onAceptar);
+    cancelar.addEventListener('click', onCancelar);
+    input.addEventListener('keydown', onKey);
+  });
+}
+
+function pedirConfirmacion(mensaje) {
+  return new Promise(resolve => {
+    const modal = $('modal-prompt');
+    const aceptar = $('modal-prompt-aceptar');
+    const cancelar = $('modal-prompt-cancelar');
+    if (!modal || !aceptar || !cancelar) { resolve(false); return; }
+    $('modal-prompt-titulo').textContent = mensaje;
+    $('modal-prompt-campo').hidden = true;
+    modal.classList.add('abierto');
+    function limpiar() {
+      modal.classList.remove('abierto');
+      aceptar.removeEventListener('click', onAceptar);
+      cancelar.removeEventListener('click', onCancelar);
+    }
+    function onAceptar() { limpiar(); resolve(true); }
+    function onCancelar() { limpiar(); resolve(false); }
+    aceptar.addEventListener('click', onAceptar);
+    cancelar.addEventListener('click', onCancelar);
   });
 }
 
@@ -177,10 +227,10 @@ if ($('select-semestre')) {
 }
 
 if ($('btn-nuevo-semestre')) {
-  $('btn-nuevo-semestre').addEventListener('click', () => {
-    const nombre = prompt('Nombre del semestre:', `Semestre ${semestres.length + 1}`);
-    if (!nombre || !nombre.trim()) return;
-    const nuevo = { id: idNuevo(), nombre: nombre.trim(), materias: [] };
+  $('btn-nuevo-semestre').addEventListener('click', async () => {
+    const nombre = await pedirTexto('Nombre del semestre', `Semestre ${semestres.length + 1}`);
+    if (!nombre) return;
+    const nuevo = { id: idNuevo(), nombre, materias: [] };
     semestres.push(nuevo);
     semestreActivo = nuevo.id;
     guardarSemestres();
@@ -189,22 +239,23 @@ if ($('btn-nuevo-semestre')) {
 }
 
 if ($('btn-renombrar-semestre')) {
-  $('btn-renombrar-semestre').addEventListener('click', () => {
+  $('btn-renombrar-semestre').addEventListener('click', async () => {
     const sem = semestreDe();
     if (!sem) return;
-    const nombre = prompt('Nuevo nombre:', sem.nombre);
-    if (!nombre || !nombre.trim()) return;
-    sem.nombre = nombre.trim();
+    const nombre = await pedirTexto('Nuevo nombre del semestre', sem.nombre);
+    if (!nombre) return;
+    sem.nombre = nombre;
     guardarSemestres();
   });
 }
 
 if ($('btn-borrar-semestre')) {
-  $('btn-borrar-semestre').addEventListener('click', () => {
+  $('btn-borrar-semestre').addEventListener('click', async () => {
     const sem = semestreDe();
     if (!sem) return;
     const suyas = tareas.filter(t => t.semestreId === sem.id).length;
-    if (!confirm(`Se eliminará "${sem.nombre}" con sus ${sem.materias.length} materia(s) y ${suyas} trabajo(s). ¿Seguro?`)) return;
+    const ok = await pedirConfirmacion(`Se eliminará "${sem.nombre}" con sus ${sem.materias.length} materia(s) y ${suyas} trabajo(s). ¿Seguro?`);
+    if (!ok) return;
     tareas = tareas.filter(t => t.semestreId !== sem.id);
     DB.guardar('tareas', tareas);
     semestres = semestres.filter(s => s.id !== sem.id);
@@ -215,7 +266,7 @@ if ($('btn-borrar-semestre')) {
 }
 
 if ($('form-materia')) {
-  $('form-materia').addEventListener('submit', e => {
+  $('form-materia').addEventListener('submit', async e => {
     e.preventDefault();
     const sem = semestreDe();
     if (!sem) { avisar('Primero crea un semestre.', 'error'); return; }
@@ -224,8 +275,10 @@ if ($('form-materia')) {
     if (sem.materias.some(m => m.nombre.toLowerCase() === nombre.toLowerCase())) {
       avisar('Esa materia ya está en el semestre.', 'error'); return;
     }
-    if (sem.materias.length >= MAX_MATERIAS &&
-        !confirm(`Normalmente son ${MAX_MATERIAS} materias por semestre. ¿Añadir una más de todos modos?`)) return;
+    if (sem.materias.length >= MAX_MATERIAS) {
+      const ok = await pedirConfirmacion(`Normalmente son ${MAX_MATERIAS} materias por semestre. ¿Añadir una más de todos modos?`);
+      if (!ok) return;
+    }
     sem.materias.push({ id: idNuevo(), nombre });
     guardarSemestres();
     e.target.reset();
@@ -312,8 +365,9 @@ function plantillaTarea(t) {
   const bDel = document.createElement('button');
   bDel.className = 'mini-btn del'; bDel.type = 'button';
   bDel.textContent = '✕'; bDel.title = 'Eliminar';
-  bDel.onclick = () => {
-    if (!confirm(`¿Eliminar "${t.tarea}"?`)) return;
+  bDel.onclick = async () => {
+    const ok = await pedirConfirmacion(`¿Eliminar "${t.tarea}"?`);
+    if (!ok) return;
     tareas = tareas.filter(x => x.id !== t.id);
     guardarTareas();
     avisar('Entrega eliminada.');
@@ -1235,7 +1289,8 @@ if ($('btn-exportar-datos')) {$('btn-exportar-datos').addEventListener('click', 
 if ($('input-importar-datos')) {$('input-importar-datos').addEventListener('change', async (e) => {
     const archivo = e.target.files[0];
     if (!archivo) return;
-    if (!confirm('Esto reemplazará los datos actuales de la aplicación. ¿Continuar?')) { e.target.value = ''; return; }
+    const ok = await pedirConfirmacion('Esto reemplazará los datos actuales de la aplicación. ¿Continuar?');
+    if (!ok) { e.target.value = ''; return; }
     try {
       const datos = JSON.parse(await archivo.text());
       Object.entries(datos).forEach(([k, v]) => { if (k.startsWith(PREFIJO)) localStorage.setItem(k, v); });

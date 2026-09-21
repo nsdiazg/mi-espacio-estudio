@@ -414,6 +414,21 @@
   <div class="avatar-mascota">👾</div>
 </div>
 
+<!-- Modal genérico: pedir texto o confirmar (reemplaza prompt/confirm, bloqueados en modo app instalada) -->
+<div id="modal-prompt" class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-prompt-titulo">
+  <div class="modal-content">
+    <h3 id="modal-prompt-titulo">Título</h3>
+    <label class="campo campo-ancho" id="modal-prompt-campo">
+      <span>Nombre</span>
+      <input type="text" id="modal-prompt-input" maxlength="60">
+    </label>
+    <div class="acciones-notas">
+      <button id="modal-prompt-aceptar" class="btn-guardar" type="button">Aceptar</button>
+      <button id="modal-prompt-cancelar" class="btn-secundario" type="button">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 <!-- Modal fondo -->
 <div id="modal-fondo" class="modal" role="dialog" aria-modal="true" aria-labelledby="titulo-modal-fondo">
   <div class="modal-content">
