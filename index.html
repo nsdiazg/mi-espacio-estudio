@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Mi Espacio de Estudio</title>
+
+<link rel="stylesheet" href="style.css">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#3d8bff">
+<meta name="description" content="Agenda, temporizador, apuntes y fichas de estudio. Funciona sin conexión.">
+<link rel="apple-touch-icon" href="icon-192.png">
+
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script defer src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+</head>
+<body>
+
+<div id="bg-overlay"></div>
+
+<header>
+  <h1>Mi Espacio de Estudio</h1>
+  <p class="subtitulo" id="saludo">Tu semestre, en un solo lugar.</p>
+  <div class="header-actions">
+    <button id="btn-notificaciones" class="btn-secundario" type="button">Activar avisos</button>
+    <button id="btn-config-fondo" class="btn-secundario" type="button">Fondo</button>
+    <button id="btn-backup" class="btn-secundario" type="button">Copia de seguridad</button>
+  </div>
+</header>
+
+<nav aria-label="Secciones">
+  <button id="btn-universidad" class="btn-menu activo" type="button">Universidad</button>
+  <button id="btn-calendario" class="btn-menu" type="button">Calendario</button>
+  <button id="btn-notas" class="btn-menu" type="button">Notas y PDF</button>
+  <button id="btn-herramientas" class="btn-menu" type="button">Temporizador</button>
+  <button id="btn-flashcards" class="btn-menu" type="button">Fichas</button>
+  <button id="btn-qr" class="btn-menu" type="button">QR</button>
+  <button id="btn-musica" class="btn-menu" type="button">Música</button>
+</nav>
+
+<main>
+
+<!-- 1. UNIVERSIDAD -->
+<section id="sec-universidad" class="activa">
+  <div class="fila-titulo">
+    <div>
+      <h2>Gestión universitaria</h2>
+      <p class="ayuda">Tus entregas se ordenan solas según los días que falten.</p>
+    </div>
+    <div class="resumen-chips" id="resumen-entregas"></div>
+  </div>
+
+  <div class="card-formulario">
+    <h3>Semestre y materias</h3>
+    <div class="barra-semestre">
+      <label class="campo">
+        <span>Semestre activo</span>
+        <select id="select-semestre"></select>
+      </label>
+      <button id="btn-nuevo-semestre" class="btn-guardar" type="button">Nuevo semestre</button>
+      <button id="btn-renombrar-semestre" class="btn-secundario" type="button">Renombrar</button>
+      <button id="btn-borrar-semestre" class="btn-secundario" type="button">Eliminar</button>
+    </div>
+
+    <p class="cupo-materias" id="cupo-materias">0 de 6 materias</p>
+    <div id="grid-materias" class="grid-materias"></div>
+
+    <form id="form-materia" class="form-materia" autocomplete="off">
+      <input type="text" id="input-nueva-materia" placeholder="Nombre de la materia (ej. Álgebra lineal)" required>
+      <button type="submit" class="btn-guardar">Añadir materia</button>
+    </form>
+  </div>
+
+  <div class="card-formulario">
+    <h3>Añadir entrega o evaluación</h3>
+    <form id="form-tarea" autocomplete="off">
+      <div class="grid-form">
+        <label class="campo">
+          <span>Materia</span>
+          <select id="input-materia" required></select>
+        </label>
+        <label class="campo">
+          <span>Tipo</span>
+          <select id="input-tipo">
+            <option value="Evaluación inicial">Evaluación inicial</option>
+            <option value="Evaluación intermedia" selected>Evaluación intermedia</option>
+            <option value="Evaluación final">Evaluación final</option>
+            <option value="Laboratorio">Laboratorio / práctica</option>
+            <option value="Tutoría STT">Tutoría STT</option>
+            <option value="Foro">Foro / participación</option>
+          </select>
+        </label>
+        <label class="campo campo-ancho">
+          <span>Nombre del trabajo</span>
+          <input type="text" id="input-tarea" placeholder="Plan de elicitación de requerimientos" required>
+        </label>
+        <label class="campo">
+          <span>Fecha límite</span>
+          <input type="date" id="input-fecha" required>
+        </label>
+        <label class="campo">
+          <span>Guía o borrador (opcional)</span>
+          <input type="file" id="input-archivo" accept=".pdf,.docx,.doc,.txt,.png,.jpg">
+        </label>
+      </div>
+      <button type="submit" class="btn-guardar">Guardar entrega</button>
+    </form>
+  </div>
+
+  <div class="fila-titulo fila-tablero">
+    <h3>Tablero de entregas</h3>
+    <label class="filtro">
+      <span>Filtrar por materia</span>
+      <select id="filtro-materia"><option value="">Todas</option></select>
+    </label>
+  </div>
+
+  <div class="kanban-grid">
+    <div class="kanban-columna urgente">
+      <h4>Próximos 3 días <span class="conteo" id="conteo-urgente">0</span></h4>
+      <ul id="lista-urgente" class="lista-items"></ul>
+    </div>
+    <div class="kanban-columna prisa">
+      <h4>Esta semana <span class="conteo" id="conteo-semana">0</span></h4>
+      <ul id="lista-semana" class="lista-items"></ul>
+    </div>
+    <div class="kanban-columna normal">
+      <h4>Más adelante <span class="conteo" id="conteo-adelante">0</span></h4>
+      <ul id="lista-adelante" class="lista-items"></ul>
+    </div>
+  </div>
+
+  <details class="bloque-completadas">
+    <summary>Entregas terminadas (<span id="conteo-hechas">0</span>)</summary>
+    <ul id="lista-hechas" class="lista-items"></ul>
+  </details>
+</section>
+
+<!-- 2. CALENDARIO -->
+<section id="sec-calendario">
+  <h2>Calendario y hábitos</h2>
+  <p class="ayuda">Los días se tiñen según los minutos de estudio que registraste.</p>
+
+  <div class="racha">
+    <span class="racha-numero" id="racha-numero">0</span>
+    <span class="racha-texto" id="racha-texto">Registra estudio hoy para empezar tu racha.</span>
+  </div>
+
+  <div class="card-calendario">
+    <div class="header-calendario">
+      <button id="btn-mes-anterior" class="btn-icono" type="button" aria-label="Mes anterior">◀</button>
+      <h3 id="titulo-mes-ano">Mes Año</h3>
+      <button id="btn-mes-siguiente" class="btn-icono" type="button" aria-label="Mes siguiente">▶</button>
+    </div>
+    <button id="btn-hoy" class="btn-secundario btn-hoy" type="button">Ir a hoy</button>
+
+    <div class="dias-semana" aria-hidden="true">
+      <div>Dom</div><div>Lun</div><div>Mar</div><div>Mié</div><div>Jue</div><div>Vie</div><div>Sáb</div>
+    </div>
+    <div id="grid-dias" class="grid-dias"></div>
+
+    <div class="leyenda">
+      <span>Menos estudio</span>
+      <i class="nivel-0"></i><i class="nivel-1"></i><i class="nivel-2"></i><i class="nivel-3"></i><i class="nivel-4"></i>
+      <span>Más estudio</span>
+    </div>
+  </div>
+
+  <div class="card-formulario detalle-dia" id="detalle-dia">
+    <h3 id="detalle-titulo">Elige un día</h3>
+    <div id="detalle-contenido"><p class="vacio">Toca cualquier día del calendario para ver sus entregas y sesiones.</p></div>
+
+    <hr class="separador">
+    <h3>Registrar algo que ya hiciste</h3>
+    <p class="ayuda">Sin cronómetro: anota la actividad y cuántos minutos le dedicaste.</p>
+    <div class="registro-rapido">
+      <button class="chip-rapido" data-min="25" data-cat="Estudio" type="button">+25 min estudio</button>
+      <button class="chip-rapido" data-min="60" data-cat="Estudio" type="button">+1 h estudio</button>
+      <button class="chip-rapido" data-min="45" data-cat="Lectura" type="button">+45 min lectura</button>
+      <button class="chip-rapido" data-min="30" data-cat="Ejercicio" type="button">+30 min ejercicio</button>
+    </div>
+    <form id="form-manual" class="form-manual" autocomplete="off">
+      <label class="campo">
+        <span>¿Qué hiciste?</span>
+        <input type="text" id="manual-nombre" placeholder="Terminé el taller de bases de datos" required>
+      </label>
+      <label class="campo">
+        <span>Categoría</span>
+        <select id="manual-categoria">
+          <option value="Estudio">Estudio</option>
+          <option value="Laboratorio">Laboratorio</option>
+          <option value="Lectura">Lectura</option>
+          <option value="Ejercicio">Ejercicio</option>
+          <option value="Escribir">Escribir</option>
+          <option value="Tutoría STT">Tutoría STT</option>
+        </select>
+      </label>
+      <label class="campo">
+        <span>Minutos</span>
+        <input type="number" id="manual-minutos" min="1" max="720" value="30" required>
+      </label>
+      <button type="submit" class="btn-guardar">Registrar</button>
+    </form>
+  </div>
+</section>
+
+<!-- 3. NOTAS Y PDF -->
+<section id="sec-notas">
+  <h2>Lector de PDF y apuntes</h2>
+  <p class="ayuda">Lee la guía a la izquierda y resume a la derecha. Todo se guarda solo.</p>
+
+  <div class="contenedor-visor-notas">
+    <div class="panel-pdf">
+      <div class="controles-pdf">
+        <input type="file" id="subir-pdf-visor" accept=".pdf" aria-label="Abrir PDF">
+        <div class="nav-pdf" hidden id="nav-pdf">
+          <button id="pdf-prev" class="btn-icono" type="button" aria-label="Página anterior">◀</button>
+          <span id="pdf-pagina">1 / 1</span>
+          <button id="pdf-next" class="btn-icono" type="button" aria-label="Página siguiente">▶</button>
+          <button id="pdf-zoom-menos" class="btn-icono" type="button" aria-label="Alejar">−</button>
+          <button id="pdf-zoom-mas" class="btn-icono" type="button" aria-label="Acercar">+</button>
+          <button id="pdf-copiar-texto" class="btn-secundario" type="button">Pasar texto a mis apuntes</button>
+        </div>
+      </div>
+      <div id="contenedor-canvas-pdf" class="visor-pdf">
+        <p class="vacio">Abre una guía en PDF para empezar a leer.</p>
+      </div>
+    </div>
+
+    <div class="panel-notas">
+      <h3>Mis apuntes</h3>
+      <textarea id="bloc-notas" placeholder="Resúmenes, ideas, borradores de entregas…"></textarea>
+      <div class="pie-notas">
+        <span id="estado-nota" class="estado-nota">Sin cambios</span>
+        <span id="conteo-palabras">0 palabras</span>
+      </div>
+      <div class="acciones-notas">
+        <button id="btn-guardar-nota" class="btn-guardar" type="button">Guardar apuntes</button>
+        <button id="btn-exportar-nota" class="btn-secundario" type="button">Descargar .txt</button>
+        <button id="btn-exportar-md" class="btn-secundario" type="button">Descargar .md</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 4. TEMPORIZADOR -->
+<section id="sec-herramientas">
+  <h2>Temporizador y pausas activas</h2>
+  <p class="ayuda">Cuenta el tiempo real de cada sesión, incluso si recargas la página.</p>
+
+  <div class="timer-container">
+    <div id="display-timer" class="display-timer" role="timer" aria-live="off">00:00:00</div>
+    <p id="timer-etiqueta" class="timer-etiqueta">Sin sesión activa</p>
+
+    <form id="form-actividad" autocomplete="off">
+      <div class="grid-form">
+        <label class="campo campo-ancho">
+          <span>¿Qué vas a hacer?</span>
+          <input type="text" id="input-actividad-nombre" placeholder="Simulación VRLab, repaso de física…" required>
+        </label>
+        <label class="campo">
+          <span>Categoría</span>
+          <select id="input-actividad-categoria">
+            <option value="Estudio">Estudio</option>
+            <option value="Laboratorio">Laboratorio</option>
+            <option value="Lectura">Lectura</option>
+            <option value="Ejercicio">Ejercicio</option>
+            <option value="Escribir">Escribir</option>
+            <option value="Tutoría STT">Tutoría STT</option>
+          </select>
+        </label>
+        <label class="campo">
+          <span>Avisarme a los (min)</span>
+          <input type="number" id="input-meta-min" min="1" max="240" value="25">
+        </label>
+      </div>
+
+      <div class="timer-controls">
+        <button type="button" id="btn-timer-start" class="btn-timer start">Iniciar</button>
+        <button type="button" id="btn-timer-pause" class="btn-timer pause" disabled>Pausar</button>
+        <button type="button" id="btn-timer-stop" class="btn-timer stop" disabled>Guardar sesión</button>
+      </div>
+    </form>
+
+    <div class="historial-box">
+      <h3>Hoy llevas <span id="total-hoy">0 min</span></h3>
+      <ul id="lista-actividades" class="lista-items"></ul>
+    </div>
+  </div>
+</section>
+
+<!-- 5. FICHAS -->
+<section id="sec-flashcards">
+  <h2>Fichas de estudio</h2>
+  <p class="ayuda">Toca una ficha para voltearla. Úsalas la noche antes del parcial.</p>
+
+  <div class="card-formulario">
+    <h3>Crear ficha</h3>
+    <form id="form-flashcard" autocomplete="off">
+      <div class="grid-form">
+        <label class="campo">
+          <span>Materia</span>
+          <input type="text" id="fc-materia" list="lista-materias" placeholder="Física">
+          <datalist id="lista-materias"></datalist>
+        </label>
+        <label class="campo campo-ancho">
+          <span>Pregunta</span>
+          <input type="text" id="fc-pregunta" placeholder="¿Qué es la inercia?" required>
+        </label>
+        <label class="campo campo-ancho">
+          <span>Respuesta</span>
+          <input type="text" id="fc-respuesta" placeholder="La resistencia de un cuerpo a cambiar su estado de movimiento" required>
+        </label>
+      </div>
+      <button type="submit" class="btn-guardar">Añadir ficha</button>
+    </form>
+  </div>
+
+  <div class="acciones-fichas">
+    <button id="btn-mezclar" class="btn-secundario" type="button">Mezclar</button>
+    <button id="btn-voltear-todas" class="btn-secundario" type="button">Mostrar respuestas</button>
+  </div>
+
+  <div id="grid-flashcards" class="grid-flashcards"></div>
+</section>
+
+<!-- 6. QR -->
+<section id="sec-qr">
+  <h2>Pasar texto al celular</h2>
+  <p class="ayuda">Genera un QR desde el PC y léelo con el teléfono. No necesita internet.</p>
+
+  <div class="qr-container">
+    <div class="card-qr">
+      <h3>Generar</h3>
+      <textarea id="texto-qr" placeholder="Pega aquí el texto o el enlace…"></textarea>
+      <div class="acciones-notas">
+        <button id="btn-generar-qr" class="btn-guardar" type="button">Generar QR</button>
+        <button id="btn-qr-desde-notas" class="btn-secundario" type="button">Usar mis apuntes</button>
+      </div>
+      <div id="qrcode" class="qrcode-box"></div>
+    </div>
+
+    <div class="card-qr">
+      <h3>Escanear</h3>
+      <button id="btn-escanear" class="btn-guardar" type="button">Encender cámara</button>
+      <div id="reader"></div>
+      <p id="resultado-qr" class="resultado-qr-text"></p>
+      <button id="btn-copiar-qr" class="btn-secundario" type="button" hidden>Copiar resultado</button>
+    </div>
+  </div>
+</section>
+
+<!-- 7. MÚSICA -->
+<section id="sec-musica">
+  <h2>Música de fondo</h2>
+  <p class="ayuda">Pega el enlace normal de Spotify o YouTube: se convierte solo en reproductor.</p>
+
+  <div class="musica-box">
+    <label class="campo campo-ancho">
+      <span>Enlace de la lista</span>
+      <input type="text" id="input-url-musica" placeholder="https://open.spotify.com/playlist/…">
+    </label>
+    <div class="acciones-notas">
+      <button id="btn-guardar-musica" class="btn-guardar" type="button">Cargar reproductor</button>
+      <button id="btn-restaurar-musica" class="btn-secundario" type="button">Volver al lo-fi</button>
+    </div>
+    <div id="contenedor-player" class="player-container">
+      <iframe id="iframe-player" title="Reproductor de música"
+        src="https://open.spotify.com/embed/playlist/37i9dQZF1DX8U21A1snP82"
+        width="100%" height="352" frameborder="0"
+        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+        loading="lazy"></iframe>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<div id="mascota-flotante" class="mascota" title="Tu compañero de estudio">
+  <div id="mascota-bocadillo" class="bocadillo">¡A estudiar!</div>
+  <div class="avatar-mascota">👾</div>
+</div>
+
+<!-- Modal fondo -->
+<div id="modal-fondo" class="modal" role="dialog" aria-modal="true" aria-labelledby="titulo-modal-fondo">
+  <div class="modal-content">
+    <h3 id="titulo-modal-fondo">Personalizar fondo</h3>
+    <p class="ayuda">Pega la URL de cualquier imagen o GIF.</p>
+    <div id="previsualizacion-fondo" class="previsualizacion-fondo"></div>
+    <label class="campo campo-ancho">
+      <span>Imagen guardada en tu equipo</span>
+      <input type="file" id="input-archivo-fondo" accept="image/*">
+    </label>
+    <label class="campo campo-ancho">
+      <span>…o pega una dirección de internet</span>
+      <input type="text" id="input-url-fondo" placeholder="https://ejemplo.com/mi-imagen.gif">
+    </label>
+    <label class="campo campo-ancho">
+      <span>Oscurecer fondo: <output id="valor-brillo">70%</output></span>
+      <input type="range" id="input-brillo" min="20" max="100" value="70">
+    </label>
+    <div class="acciones-notas">
+      <button id="btn-aplicar-fondo" class="btn-guardar" type="button">Aplicar</button>
+      <button id="btn-restaurar-fondo" class="btn-secundario" type="button">Quitar fondo</button>
+      <button id="btn-cerrar-modal" class="btn-secundario" type="button">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal copia de seguridad -->
+<div id="modal-backup" class="modal" role="dialog" aria-modal="true" aria-labelledby="titulo-modal-backup">
+  <div class="modal-content">
+    <h3 id="titulo-modal-backup">Copia de seguridad</h3>
+    <p class="ayuda">Todo vive en este navegador. Descarga un respaldo antes de formatear o cambiar de equipo.</p>
+    <div class="acciones-notas">
+      <button id="btn-exportar-datos" class="btn-guardar" type="button">Descargar respaldo</button>
+      <label class="btn-secundario etiqueta-archivo">
+        Restaurar respaldo
+        <input type="file" id="input-importar-datos" accept=".json" hidden>
+      </label>
+      <button id="btn-cerrar-backup" class="btn-secundario" type="button">Cerrar</button>
+    </div>
+    <p class="ayuda" id="uso-espacio"></p>
+  </div>
+</div>
+
+<div id="contenedor-avisos" class="avisos" role="status" aria-live="polite"></div>
+
+<script src="script.js"></script>
+</body>
+</html>
