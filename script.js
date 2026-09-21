@@ -1162,10 +1162,14 @@ if ($('input-brillo')) {$('input-brillo').addEventListener('input', e => {
     document.documentElement.style.setProperty('--brillo-fondo', e.target.value / 100);
   });
 }
-if ($('btn-aplicar-fondo')) {$('btn-aplicar-fondo').addEventListener('click', () => {
-    const url = $('input-url-fondo') ?$('input-url-fondo').value.trim() : '';
-    if (url && !/^https?:\/\//.test(url)) { avisar('La dirección debe empezar por http:// o https://', 'error'); return; }
-    DB.guardar('fondo', url);
+if ($('btn-aplicar-fondo')) {
+  $('btn-aplicar-fondo').addEventListener('click', () => {
+    const url = $('input-url-fondo') ? $('input-url-fondo').value.trim() : '';
+    // Si hay una URL escrita, se guarda. Si está vacía, no borra la imagen local existente.
+    if (url) {
+      if (!/^https?:\/\//.test(url)) { avisar('La dirección debe empezar por http:// o https://', 'error'); return; }
+      DB.guardar('fondo', url);
+    }
     if ($('input-brillo')) DB.guardar('brillo', Number($('input-brillo').value));
     aplicarFondo();
     if (modalFondo) modalFondo.classList.remove('abierto');
