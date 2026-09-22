@@ -286,27 +286,24 @@ if ($('form-materia')) {
 }
 
 /* ---------- 1. NAVEGACIÓN ---------- */
+/* ---------- 1. NAVEGACIÓN ---------- */
 const botonesMenu = document.querySelectorAll('.btn-menu');
 const secciones = document.querySelectorAll('main section');
 
 botonesMenu.forEach(boton => {
   boton.addEventListener('click', () => {
-    botonesMenu.forEach(b => b.classList.remove('activo'));
-    boton.classList.add('activo');
+    document.querySelectorAll('.btn-menu').forEach(b => b.classList.remove('activo'));
     secciones.forEach(s => s.classList.remove('activa'));
+    
+    boton.classList.add('activo');
     const destino = $(boton.id.replace('btn-', 'sec-'));
     if (destino) destino.classList.add('activa');
+    
     DB.guardar('seccion', boton.id);
     if (boton.id === 'btn-calendario') renderizarCalendario();
     if (boton.id !== 'btn-qr') detenerEscaner();
   });
 });
-
-(function restaurarSeccion() {
-  const guardada = DB.leer('seccion', 'btn-universidad');
-  const boton = $(guardada);
-  if (boton && guardada !== 'btn-universidad') boton.click();
-})();
 
 /* ---------- 2. ENTREGAS Y TABLERO KANBAN ---------- */
 let tareas = DB.leer('tareas', []);
@@ -1454,3 +1451,19 @@ if (mascotaElem) {
     if (mascotaElem) mascotaElem.style.cursor = 'grab';
   });
 }
+
+// Abrir/cerrar desplegable Explorar
+const btnExplorar = document.getElementById('btn-explorar');
+const menuExplorar = document.getElementById('menu-explorar');
+
+if (btnExplorar && menuExplorar) {
+  btnExplorar.addEventListener('click', (e) => {
+    e.stopPropagation();
+    menuExplorar.classList.toggle('activo');
+  });
+
+  document.addEventListener('click', () => {
+    menuExplorar.classList.remove('activo');
+  });
+}
+

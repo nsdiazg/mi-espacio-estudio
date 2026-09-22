@@ -43,12 +43,30 @@ header h1{margin:0;font-size:clamp(22px,4vw,30px);font-weight:700;letter-spacing
 .header-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;background:var(--card-bg);padding:8px;border-radius:var(--radius);border:1px solid var(--card-border);backdrop-filter:blur(12px)}
 
 /* ---------- Navegación ---------- */
-nav{display:flex;justify-content:center;gap:8px;padding:12px 16px;flex-wrap:wrap;position:sticky;top:0;z-index:50;background:linear-gradient(to bottom,rgba(18,18,20,.92),rgba(18,18,20,0))}
-.btn-menu{
-  border:1px solid var(--card-border);background:var(--card-bg);
-  padding:9px 16px;border-radius:12px;font:inherit;font-weight:600;font-size:14px;
-  cursor:pointer;color:var(--text-secondary);backdrop-filter:blur(10px);
-  transition:background .2s,color .2s,border-color .2s;
+nav {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 16px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: linear-gradient(to bottom, rgba(11, 16, 24, 0.95), rgba(11, 16, 24, 0));
+  backdrop-filter: blur(8px);
+}
+
+.btn-menu {
+  border: 1px solid var(--card-border);
+  background: var(--card-bg);
+  padding: 8px 14px;
+  border-radius: 10px;
+  font: inherit;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  backdrop-filter: blur(10px);
+  transition: all 0.2s ease;
 }
 .btn-menu:hover{color:var(--text-primary);border-color:rgba(255,255,255,.25)}
 .btn-menu.activo{background:var(--accent-primario);color:#fff;border-color:var(--accent-primario);box-shadow:0 4px 16px rgba(61,139,255,.4)}
@@ -299,4 +317,150 @@ textarea{resize:vertical;min-height:110px}
 #mascota-flotante {
   cursor: grab;
   user-select: none; /* Evita que la imagen se seleccione como texto al arrastrar */
+}
+
+
+/* Marca de agua con el icono del birrete */
+.logo-marca-agua {
+  position: fixed;     /* Se queda fijo en la pantalla */
+  top: 10px;           /* Distancia desde arriba */
+  right: 10px;         /* Distancia desde la derecha (puedes cambiar a 'left' si lo quieres a la izquierda) */
+  width: 75px;         /* Tamaño del logo (puedes subirlo a 60px o 70px si lo quieres más grande) */
+  height: auto;
+  opacity: 0.18;
+  filter: grayscale(100%);
+  transition: opacity 0.8s ease;     /* Transparencia para efecto marca de agua (0.3 = 30%) */
+  z-index: 1000;       /* Para que quede por encima de otros elementos */
+  pointer-events: none; /* Los clics atraviesan la imagen */
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* Posicionamiento en la esquina superior izquierda */
+/* Barra superior estilizada */
+.barra-superior {
+  position: fixed;
+  top: 18px;
+  left: 20px;
+  display: flex;
+  gap: 6px;
+  z-index: 1000;
+  background: rgba(22, 28, 40, 0.65);
+  padding: 4px;
+  border-radius: 12px;
+  border: 1px solid var(--card-border);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+}
+
+.btn-top {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  padding: 7px 14px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-top:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+}
+
+.btn-top.activo {
+  background: var(--accent-primario);
+  color: #ffffff;
+  box-shadow: 0 2px 10px rgba(61, 139, 255, 0.35);
+}
+
+/* Menú desplegable "Explorar" estilizado */
+.contenido-desplegable {
+  display: none;
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  background: rgba(22, 28, 40, 0.95);
+  min-width: 180px;
+  border: 1px solid var(--card-border);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+  border-radius: 12px;
+  overflow: hidden;
+  backdrop-filter: blur(16px);
+  padding: 5px;
+  flex-direction: column;
+}
+
+.contenido-desplegable.activo {
+  display: flex;
+}
+
+.opcion-menu {
+  background: none;
+  border: none;
+  padding: 9px 12px;
+  text-align: left;
+  width: 100%;
+  cursor: pointer;
+  font-size: 13.5px;
+  color: var(--text-secondary);
+  border-radius: 8px;
+  transition: all 0.15s ease;
+}
+
+.opcion-menu:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+}
+.materia-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.materia-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  border-left-color: var(--accent-primario);
+}
+/* Barra de desplazamiento personalizad */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-dark);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+/* Fondo con desenfoque de cristal profundo */
+.card-formulario, .card-calendario, .kanban-columna, .materia-card {
+  background: rgba(18, 24, 38, 0.6) !important;
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+/* Gradiente sutil en el título principal */
+header h1 {
+  background: linear-gradient(180deg, #ffffff 0%, #a8a8b3 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+/* Títulos de secciones más nítidos */
+h2, h3 {
+  letter-spacing: -0.02em;
+  color: #f0f2f5;
 }
