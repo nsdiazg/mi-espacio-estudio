@@ -326,7 +326,7 @@ textarea{resize:vertical;min-height:110px}
   width: 42px;
   height: auto;
   opacity: 0.9;
-  filter: grayscale(100%);
+  filter: grayscale(10%);
   align-self: center;
   margin-right: 4px;
   user-select: none;
@@ -503,4 +503,19 @@ h2, h3 {
   .timer-container, .kanban-columna, .card-qr, .musica-box, .detalle-dia {
     padding: 14px;
   }
+}
+/* Nombre de la app estilizado tipo logo */
+.nombre-marca {
+  align-self: center;
+  font-weight: 800;
+  font-size: 15px;
+  background: linear-gradient(135deg, #ffffff 30%, var(--accent-primario) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-left: 2px;
+  margin-right: 12px;
+  letter-spacing: -0.03em;
+  user-select: none;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
