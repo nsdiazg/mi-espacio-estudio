@@ -1421,3 +1421,36 @@ window.addEventListener('beforeunload', () => { if (blocNotas && blocNotas.value
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
 }
+// Funcionalidad para arrastrar la mascota
+const mascotaElem = document.getElementById('mascota-flotante');
+
+if (mascotaElem) {
+  let isDragging = false;
+  let offsetX = 0;
+  let offsetY = 0;
+
+  mascotaElem.addEventListener('mousedown', (e) => {
+    isDragging = true;
+    offsetX = e.clientX - mascotaElem.getBoundingClientRect().left;
+    offsetY = e.clientY - mascotaElem.getBoundingClientRect().top;
+    mascotaElem.style.cursor = 'grabbing';
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    
+    // Calcula la nueva posición
+    let x = e.clientX - offsetX;
+    let y = e.clientY - offsetY;
+
+    mascotaElem.style.left = `${x}px`;
+    mascotaElem.style.top = `${y}px`;
+    mascotaElem.style.bottom = 'auto'; // Anula la posición fija inferior
+    mascotaElem.style.right = 'auto';  // Anula la posición fija derecha
+  });
+
+  document.addEventListener('mouseup', () => {
+    isDragging = false;
+    if (mascotaElem) mascotaElem.style.cursor = 'grab';
+  });
+}
