@@ -464,3 +464,27 @@ h2, h3 {
   letter-spacing: -0.02em;
   color: #f0f2f5;
 }
+/* ---------- Ajustes Responsivos para Celular (Media Query) ---------- */
+@media (max-width: 768px) {
+  /* Hacer que la barra de botones superior o de menú se adapte en columna o permita desplazamiento fluido */
+  .header-actions, nav, .barra-superior {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  /* Asegurar que los contenedores de los botones de acceso rápido no se desborden */
+  header {
+    padding: 16px 10px 5px;
+  }
+
+  /* Distribuir mejor las tarjetas y elementos en pantallas pequeñas */
+  .kanban-grid, .grid-flashcards, .qr-container {
+    grid-template-columns: 1fr;
+  }
+
+  /* Evitar desbordamientos en tablas o cajas de texto */
+  .card-formulario, .card-calendario, .panel-pdf, .panel-notas,
+  .timer-container, .kanban-columna, .card-qr, .musica-box, .detalle-dia {
+    padding: 14px;
+  }
+}
