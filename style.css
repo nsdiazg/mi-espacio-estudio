@@ -290,3 +290,9 @@ textarea{resize:vertical;min-height:110px}
 .separador{border:none;border-top:1px solid var(--card-border);margin:18px 0}
 .previsualizacion-fondo{width:100%;height:80px;border-radius:10px;background-size:cover;background-position:center;
   border:1px solid var(--card-border);margin-bottom:12px;display:none}
+
+  #img-mascota {
+  width: 50px; /* Puedes cambiar este número si quieres que sea más grande o más pequeña */
+  height: auto;
+  display: block;
+}
