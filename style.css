@@ -321,20 +321,19 @@ textarea{resize:vertical;min-height:110px}
 
 
 /* Marca de agua con el icono del birrete */
+/* Logo integrado en la barra superior */
 .logo-marca-agua {
-  position: fixed;     /* Se queda fijo en la pantalla */
-  top: 10px;           /* Distancia desde arriba */
-  right: 10px;         /* Distancia desde la derecha (puedes cambiar a 'left' si lo quieres a la izquierda) */
-  width: 75px;         /* Tamaño del logo (puedes subirlo a 60px o 70px si lo quieres más grande) */
+  width: 42px;
   height: auto;
-  opacity: 0.18;
+  opacity: 0.9;
   filter: grayscale(100%);
-  transition: opacity 0.8s ease;     /* Transparencia para efecto marca de agua (0.3 = 30%) */
-  z-index: 1000;       /* Para que quede por encima de otros elementos */
-  pointer-events: none; /* Los clics atraviesan la imagen */
+  align-self: center;
+  margin-right: 4px;
   user-select: none;
   -webkit-user-drag: none;
+  pointer-events: none;
 }
+
 
 /* Posicionamiento en la esquina superior izquierda */
 /* Barra superior estilizada */
