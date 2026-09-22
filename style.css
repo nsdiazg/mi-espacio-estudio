@@ -338,6 +338,7 @@ textarea{resize:vertical;min-height:110px}
 
 /* Posicionamiento en la esquina superior izquierda */
 /* Barra superior estilizada */
+/* ---------- Barra superior fija corregida para móvil ---------- */
 .barra-superior {
   position: fixed;
   top: 18px;
@@ -353,6 +354,22 @@ textarea{resize:vertical;min-height:110px}
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
 }
 
+/* Ajuste específico para celulares dentro de la media query o al final */
+@media (max-width: 768px) {
+  .barra-superior {
+    position: relative; /* Deja de flotar y se integra de forma natural arriba */
+    top: auto;
+    left: auto;
+    width: 100%;
+    margin-bottom: 12px;
+    justify-content: center;
+  }
+  
+  /* Empuja un poco el contenido principal para que respire */
+  main {
+    padding-top: 10px;
+  }
+}
 .btn-top {
   background: transparent;
   border: none;
